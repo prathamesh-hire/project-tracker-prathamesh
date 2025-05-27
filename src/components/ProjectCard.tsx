@@ -7,11 +7,15 @@ import { Modal } from '@/components/Modal';
 import { EditProjectForm } from '@/components/EditProjectForm';
 import { useRouter } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
+import { supabaseBrowser } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// );
+
+const supabase = supabaseBrowser();
 
 export function ProjectCard({ project }: { project: Project }) {
   const router = useRouter();

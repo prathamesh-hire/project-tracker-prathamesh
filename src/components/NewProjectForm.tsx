@@ -2,28 +2,25 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseBrowser } from '@/lib/supabase-browser';   // ← new helper
 
-// one fresh client for the browser
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = supabaseBrowser();
 
 const STATUS = ['Not Started', 'In Progress', 'Completed'] as const;
 
 export function NewProjectForm() {
   const router = useRouter();
 
-  // form state
+  // ── form state ──────────────────────────────────────────────
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<(typeof STATUS)[number]>('Not Started');
-  const [dueDate, setDueDate] = useState<string>('');
+  const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── submit handler ──────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return setError('Name is required');
@@ -31,7 +28,20 @@ export function NewProjectForm() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.from('projects').insert({
+    /* 1️⃣ make sure we’re logged in and grab the UID */
+    const {
+      data: { user },
+      error: userErr,
+    } = await supabase.auth.getUser();
+
+    if (userErr || !user) {
+      setLoading(false);
+      return setError(userErr?.message ?? 'Not logged in');
+    }
+
+    /* 2️⃣ insert with user_id so RLS passes */
+    const { error: insertErr } = await supabase.from('projects').insert({
+      user_id: user.id,                 // ← critical for NOT-NULL + RLS
       name: name.trim(),
       description: description || null,
       notes: notes || null,
@@ -41,27 +51,26 @@ export function NewProjectForm() {
 
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (insertErr) {
+      setError(insertErr.message);
       return;
     }
 
-    // optimistic refresh
+    /* 3️⃣ optimistic reset + refresh */
     setName('');
     setDescription('');
     setNotes('');
     setStatus('Not Started');
     setDueDate('');
-    router.refresh(); // revalidate server component
+    router.refresh();
   }
 
+  // ── form UI ─────────────────────────────────────────────────
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="card p-8 space-y-6 mx-auto max-w-2xl"
-    >
+    <form onSubmit={handleSubmit} className="card mx-auto max-w-2xl p-8 space-y-6">
       <h2 className="text-xl font-bold">Add a new project</h2>
 
+      {/* name */}
       <div>
         <label className="block text-sm font-medium">Name *</label>
         <input
@@ -73,6 +82,7 @@ export function NewProjectForm() {
         />
       </div>
 
+      {/* description */}
       <div>
         <label className="block text-sm font-medium">Description</label>
         <textarea
@@ -83,6 +93,7 @@ export function NewProjectForm() {
         />
       </div>
 
+      {/* notes */}
       <div>
         <label className="block text-sm font-medium">Notes</label>
         <textarea
@@ -93,14 +104,13 @@ export function NewProjectForm() {
         />
       </div>
 
+      {/* status & date */}
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium">Status</label>
           <select
             value={status}
-            onChange={(e) =>
-              setStatus(e.target.value as (typeof STATUS)[number])
-            }
+            onChange={(e) => setStatus(e.target.value as (typeof STATUS)[number])}
             className="select w-full"
           >
             {STATUS.map((s) => (
@@ -122,11 +132,7 @@ export function NewProjectForm() {
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      <button
-        type="submit"
-        className="btn w-full"
-        disabled={loading}
-      >
+      <button type="submit" className="btn w-full" disabled={loading}>
         {loading ? 'Saving…' : 'Create Project'}
       </button>
     </form>
