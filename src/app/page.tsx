@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Project } from "@/types/project";
-import { NewProjectForm } from '@/components/NewProjectForm';
+import { NewProjectForm } from "@/components/NewProjectForm";
+import { statusColor } from "@/components/StatusColors";
+import { ProjectCard } from "@/components/ProjectCard";
 
 export const revalidate = 30; // ISR every 30 s (optional)
 
@@ -26,7 +28,7 @@ export default async function Home() {
   return (
     <main className="mx-auto max-w-3xl p-6 space-y-6">
       <NewProjectForm />
-      
+
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
         <p className="text-sm text-gray-500">
@@ -39,36 +41,9 @@ export default async function Home() {
           No projects yet. Add one to get started!
         </p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((p) => (
-            <li
-              key={p.id}
-              className="rounded-xl border border-gray-200 bg-white/5 backdrop-blur-sm p-4 shadow-sm transition hover:shadow-md"
-            >
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-lg font-semibold">{p.name}</h2>
-                <StatusBadge status={p.status} />
-              </div>
-
-              {/* description (if any) */}
-              {p.description && (
-                <p className="mt-1 text-sm text-gray-300">{p.description}</p>
-              )}
-
-              {/* notes (if any) */}
-              {p.notes && (
-                <p className="mt-1 text-sm italic text-gray-400">
-                  📝 {p.notes}
-                </p>
-              )}
-
-              {/* due-date line */}
-              <div className="mt-1 text-sm text-gray-400">
-                {p.due_date
-                  ? `Due ${new Date(p.due_date).toLocaleDateString()}`
-                  : "No due date"}
-              </div>
-            </li>
+            <ProjectCard key={p.id} project={p} />
           ))}
         </ul>
       )}

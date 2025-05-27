@@ -58,7 +58,7 @@ export function NewProjectForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-xl border border-gray-200 bg-white/5 p-6 shadow-sm"
+      className="card p-8 space-y-6 mx-auto max-w-2xl"
     >
       <h2 className="text-xl font-bold">Add a new project</h2>
 
