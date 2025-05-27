@@ -1,10 +1,10 @@
-import { supabase } from "@/lib/supabase";
+// import { supabase } from "@/lib/supabase";
 import { supabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import { StatusBadge } from "@/components/StatusBadge";
+// import { StatusBadge } from "@/components/StatusBadge";
 import { Project } from "@/types/project";
 import { NewProjectForm } from "@/components/NewProjectForm";
-import { statusColor } from "@/components/StatusColors";
+// import { statusColor } from "@/components/StatusColors";
 import { ProjectCard } from "@/components/ProjectCard";
 import { SignOutBtn } from "@/components/SignOutBtn";
 
