@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js';
 import { Project } from '@/types/project';
 import { statusColor } from '@/components/StatusColors';
 import { Modal } from '@/components/Modal';
